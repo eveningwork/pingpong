@@ -5,22 +5,20 @@ from random import randint
 window = display.set_mode((700,500))
 display.set_caption('Пинг-Понг')
 background = transform.scale(image.load('images.jpg'), (700,500))
-# sprite1 = transform.scale(image.load('cyborg.png'), (100,100))
-# sprite2 = transform.scale(image.load('hero.png'), (100,100))
 
 
 score = 0
-
+score2 = 0
 
 font.init()
-font1 = font.SysFont('Arial', 70)
-losee = font1.render('YOU LOSE!', True, (255, 215, 215))
-win = font1.render('YOU WIN!', True, (255, 0, 255))
-font = font.SysFont('Arial', 40)
-
-finish = False
+font1 = font.SysFont('Arial', 30)
+losee = font1.render('PLAYER 1 LOSE', True, (255, 215, 215))
+losee2 = font1.render('PLAYER 2 LOSE', True, (255, 0, 255))
+win1 = font1.render('PLAYER 1 WIN', True,(255,0,255))
+win2 = font1.render('PLAYER 2 WIN', True,(255,0,255))
 
 game = True
+finish = False
 clock = time.Clock()
 FPS = 60
 
@@ -36,7 +34,7 @@ class GameSprite(sprite.Sprite):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
 class Player(GameSprite):
-    def update(self):
+    def update_k(self):
         keys_pressed = key.get_pressed()
         if keys_pressed[K_w] and self.rect.y > 5:
             self.rect.y -= self.speed
@@ -50,29 +48,13 @@ class Player(GameSprite):
         if keys_pressed[K_DOWN] and self.rect.y < 390:
             self.rect.y += self.speed
 
-
-class Enemy(GameSprite):
-    def update(self):
-        self.rect.y += self.speed
-        global lost
-        if self.rect.y > 500:
-            self.rect.y = 0 
-            self.rect.x = randint(100,650)
-            lost += 1
-
-class Bullet(GameSprite):
-    def update(self):
-        self.rect.y += self.speed
-        if self.rect.y < 0:
-            self.kill()
-
 player = Player('raketka.png', 20, 390, 80, 100, 10)
 player2 = Player('raketka2.png', 600, 390, 80, 100, 10)
-ball = Enemy('ball.png', 350, 100, 25, 25, 5)
+ball = Player('ball.png', 350, 100, 25, 25, 5)
 
 
-speed_x = 1
-speed_y = 1
+speed_x = randint(1,3)
+speed_y = randint(1,3)
 
 
 while game:
@@ -81,41 +63,68 @@ while game:
             game = False
     if finish != True:
         window.blit(background, (0,0))
-        player.update()
-        player.reset()
+        player.update_k()
+        
         player2.update_l()
-        player2.reset()
-        ball.reset()
+        
         ball.rect.x += speed_x
         ball.rect.y += speed_y
+
+        text = font1.render('Счет 1 игрока:' + str(score), 1, (255, 255, 255))
+        window.blit(text, (10, 20))
+
+        text2 = font1.render('Счет 2 игрока:' + str(score2), 1, (255, 255, 255))
+        window.blit(text2, (10, 60))
 
         #отбитие мяча
         if ball.rect.y > 450 or ball.rect.y < 0:
             speed_y *= -1
         if sprite.collide_rect(player, ball) or sprite.collide_rect(player2, ball):
             speed_x *= -1
+            speed_y *= 1
+
+        if ball.rect.y > 500:
+            ball.rect.x = 0 
+            ball.rect.x = randint(100,650)
         
-        if ball.rect.y > 450:
+        if ball.rect.x < 0:
             finish = True
             window.blit(losee, (200, 200))
+            game = True
 
-    else:
-        finish = False
-        # score = 0
-        # lost = 0
-        # life = 3
-        # for b in bullets:
-        #     b.kill()
-        # for m in monsters:
-        #     m.kill()
-        # for a in ast:
-        #     a.kill()
+        if ball.rect.x > 700:
+            finish = True
+            window.blit(losee2, (200, 200))
+            game = True
 
-        # time.delay(3000)
+        if sprite.collide_rect(player, ball):
+            randint(1,5)
+            randint(1,5)
 
-        
+        if sprite.collide_rect(player2, ball):
+            randint(1,5)
+            randint(1,5)
 
+        if sprite.collide_rect(player, ball):
+            score += 1
 
+        if sprite.collide_rect(player2, ball):
+            score2 += 1
+
+        if score >= 5:
+            finish = True
+            window.blit(win1, (200, 200))
+
+        if score2 >= 5:
+            finish = True
+            window.blit(win2, (200, 200))
+
+        player.reset()
+        player2.reset()
+        ball.reset()
+    # else:
+    #     finish = False
+    #     score = 0
 
     display.update()
     clock.tick(FPS)
